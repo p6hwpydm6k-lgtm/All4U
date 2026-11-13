@@ -62,6 +62,9 @@ def publish_reel(video_url, caption):
     r = requests.post(f"{API}/{uid}/media", data={
         "media_type": "REELS", "video_url": video_url,
         "caption": caption, "access_token": token}, timeout=60)
+    if not r.ok:
+        print("MEDIA-FEHLER:", r.status_code, r.text)
+        print("video_url:", video_url)
     r.raise_for_status()
     cid = r.json()["id"]
     for _ in range(40):
@@ -72,8 +75,11 @@ def publish_reel(video_url, caption):
             raise RuntimeError(f"Instagram-Verarbeitung fehlgeschlagen: {s}")
         time.sleep(8)
     p = requests.post(f"{API}/{uid}/media_publish", data={"creation_id": cid, "access_token": token}, timeout=60)
+    if not p.ok:
+        print("PUBLISH-FEHLER:", p.status_code, p.text)
     p.raise_for_status()
     print("Veröffentlicht:", p.json())
+
 
 OUT = pathlib.Path("videos"); OUT.mkdir(exist_ok=True)
 HIST = pathlib.Path("history.json")
